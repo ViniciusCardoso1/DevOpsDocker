@@ -1,0 +1,48 @@
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: mydb
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - db_api
+
+  api:
+    build:
+      context: ../api/
+      dockerfile: Dockerfile
+    environment:
+      DB_HOST: db
+      DB_PORT: 5433
+      DB_USER: postgres
+      DB_PASS: 1234
+      DB_NAME: mydb
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    networks:
+      - db_api
+      - api_front
+
+  front:
+    build:
+      context: ../front
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api
+    networks:
+      - api_front
+
+volumes:
+  postgres_data:
+
+networks:
+  db_api:
+  api_front:
